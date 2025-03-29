@@ -24,8 +24,12 @@ jobs:
         echo "pytest" > android_apk_project/requirements.txt
         echo "from setuptools import setup, find_packages
 
-setup(  name='android-apk-project', version='0.1', packages=find_packages(where='src'), package_dir={'': 'src'},)
-" > android_apk_project/setup.py
+setup(
+    name='android-apk-project',
+    version='0.1',
+    packages=find_packages(where='src'),
+    package_dir={'': 'src'},
+)" > android_apk_project/setup.py
 
     - name: Install dependencies
       run: |
