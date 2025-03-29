@@ -1,89 +1,39 @@
-name: Generate Project Structure
+name: Create Python Project Structure for Android APK
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push]
 
 jobs:
-  create_structure:
+  setup_python_project:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
     - name: Create project structure
       run: |
-        mkdir -p my_python_app/.buildozer
-        mkdir -p my_python_app/.vscode
-        mkdir -p my_python_app/app/other_modules
-        mkdir -p my_python_app/assets
+        mkdir -p android_apk_project/{src,tests,assets,build}
+        touch android_apk_project/src/__init__.py
+        touch android_apk_project/tests/__init__.py
+        echo "# Android APK Project" > android_apk_project/README.md
+        echo "pytest" > android_apk_project/requirements.txt
+        echo "from setuptools import setup, find_packages
 
-        touch my_python_app/.vscode/launch.json
-        touch my_python_app/app/main.py
-        touch my_python_app/app/__init__.py
-        touch my_python_app/app/app.kv
-        touch my_python_app/app/other_modules/module1.py
-        touch my_python_app/app/other_modules/module2.py
-        touch my_python_app/assets/icon.png
-        touch my_python_app/assets/splash.png
-        touch my_python_app/buildozer.spec
-        touch my_python_app/README.md
-        touch my_python_app/requirements.txt
+setup(  name='android-apk-project', version='0.1', packages=find_packages(where='src'), package_dir={'': 'src'},)
+" > android_apk_project/setup.py
 
-    - name: Add content to files
+    - name: Install dependencies
       run: |
-        echo '{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Python: Current File",
-      "type": "python",
-      "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal"
-    }
-  ]
-}' > my_python_app/.vscode/launch.json
+        cd android_apk_project
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-        echo 'from kivy.app import App
-from kivy.uix.label import Label
-
-class MyApp(App):
-    def build(self):
-        return Label(text="Hello, Android!")
-
-if __name__ == "__main__":
-    MyApp().run()' > my_python_app/app/main.py
-
-        echo 'kivy==2.1.0' > my_python_app/requirements.txt
-
-        echo '[app]
-title = My Application
-package.name = myapp
-package.domain = org.myapp
-source.include_exts = py,png,jpg,kv,atlas
-version = 0.1
-requirements = python3,kivy
-orientation = portrait
-osx.kivy_version = 2.1.0
-fullscreen = 1
-
-[buildozer]
-log_level = 2
-warn_on_root = 1' > my_python_app/buildozer.spec
-
-        echo '# My Python App
-This is a sample Python project structure for creating an Android APK using Kivy and Buildozer.' > my_python_app/README.md
-
-    - name: Commit and push changes
+    - name: Run tests
       run: |
-        git config --global user.name 'GitHub Actions'
-        git config --global user.email 'actions@github.com'
-        git add .
-        git commit -m 'Generate project structure'
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        cd android_apk_project
+        pytest
