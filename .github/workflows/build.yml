@@ -1,4 +1,3 @@
-KEN: ${{ secrets.GITHUB_TOKEN }}
 name: Generate Project Structure
 
 on:
